@@ -191,7 +191,7 @@
       userInput.value = '';
       const thinkingDiv = addThinkingIndicator();
       try {
-        const response = await fetch('https://pipi-portal.glitch.me/chat', {
+        const response = await fetch('https://pipi-portal.glitch.me/chat/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -227,7 +227,7 @@
       div.innerHTML = `
         <div class="thinking-indicator">
           <div class="dot-flashing"></div>
-          Purring up an answer...
+          Thinking...
         </div>
       `;
       container.appendChild(div);
