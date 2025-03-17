@@ -193,6 +193,7 @@
       try {
         const response = await fetch('https://pipi-portal.glitch.me/chat', {
           method: 'POST',
+          mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: 'deepseek-reasoner',
