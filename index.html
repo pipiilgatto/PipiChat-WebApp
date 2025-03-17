@@ -206,7 +206,7 @@
         if (response.ok) {
           replaceThinkingMessage(thinkingDiv, data.reply);
         } else {
-          replaceThinkingMessage(thinkingDiv, `Oops! ${data.error?.message || 'Unknown error'}`);
+          replaceThinkingMessage(thinkingDiv, `Sorry! ${data.error?.message || 'Deepseek failed to respond'}`);
         }
       } catch (error) {
         replaceThinkingMessage(thinkingDiv, `Connection error: ${error.message}`);
