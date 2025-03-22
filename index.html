@@ -191,7 +191,7 @@
       userInput.value = '';
       const thinkingDiv = addThinkingIndicator();
       try {
-        const response = await fetch('https://pipi-portal.glitch.me/chat', {
+        const response = await fetch('https://pipi-portal.glitch.me/api/chatbot', {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
