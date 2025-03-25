@@ -2,49 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Ensure proper scaling on iPhone 15 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pipi the AI Cat</title>
-
-  <!-- Enable standalone mode (web clip) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <!-- Set the status bar style (can be default, black, or black-translucent) -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <!-- Specify an icon (make sure to provide a 180x180 PNG for best results) -->
+  <title>Pipi the AI Cat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="apple-touch-icon" href="icon.png">
-  
-  <!-- You can also include a manifest.json if desired, but iOS mainly uses meta tags -->
-  <!-- <link rel="manifest" href="manifest.json"> -->
+  <link rel="manifest" href="manifest.json">
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-  <!-- Inline or external CSS -->
-  <style>
-    /* Example styling: (you can adapt your original styles) */
+    :root {
+      --primary-black: #2d2d2d;
+      --secondary-black: #404040;
+      --chat-white: #f8f9fa;
+      --accent: #7c7c7c;
+    }
+
     body {
+      font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
-      font-family: 'Helvetica Neue', sans-serif;
       background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
       min-height: 100vh;
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
     }
+
     .chat-box {
       background: white;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       overflow: hidden;
     }
+
     .chat-header {
-      background: #2d2d2d;
+      background: var(--primary-black);
       color: white;
       padding: 1.5rem;
       border-radius: 20px 20px 0 0;
-      display: flex;
-      align-items: center;
     }
+
     .chat-header h1 {
       margin: 0;
       font-size: 1.5rem;
@@ -52,6 +54,7 @@
       align-items: center;
       gap: 0.8rem;
     }
+
     .cat-avatar {
       width: 40px;
       height: 40px;
@@ -62,26 +65,29 @@
       justify-content: center;
       position: relative;
     }
+
     .cat-avatar::before {
       content: '';
       position: absolute;
       width: 12px;
       height: 12px;
-      background: #2d2d2d;
+      background: var(--primary-black);
       border-radius: 50%;
       top: -5px;
       left: 50%;
       transform: translateX(-50%);
     }
+
     .messages-container {
       height: 65vh;
       overflow-y: auto;
       padding: 2rem;
-      background: #f8f9fa;
+      background: var(--chat-white);
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
     }
+
     .message {
       max-width: 70%;
       padding: 1.2rem;
@@ -89,58 +95,99 @@
       animation: messageAppear 0.3s ease-out;
       position: relative;
     }
+
     @keyframes messageAppear {
       from { transform: translateY(10px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+
     .user-message {
-      background: #2d2d2d;
+      background: var(--primary-black);
       color: white;
       margin-left: auto;
       border-radius: 15px 15px 0 15px;
     }
+
     .bot-message {
       background: white;
-      color: #2d2d2d;
-      border: 2px solid #2d2d2d;
+      color: var(--primary-black);
+      border: 2px solid var(--primary-black);
       margin-right: auto;
       border-radius: 15px 15px 15px 0;
+    }
+
+    .thinking-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .dot-flashing {
       position: relative;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dotFlashing 1s infinite linear;
     }
-    .bot-message::before {
-      content: 'Pipi';
+
+    .dot-flashing::before, .dot-flashing::after {
+      content: '';
+      display: inline-block;
       position: absolute;
-      top: -18px;
-      left: 0;
-      font-size: 0.8rem;
-      color: #7c7c7c;
-      font-weight: 500;
+      top: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
     }
+
+    .dot-flashing::before {
+      left: -10px;
+      animation: dotFlashing 1s infinite linear;
+      animation-delay: 0.2s;
+    }
+
+    .dot-flashing::after {
+      left: 10px;
+      animation: dotFlashing 1s infinite linear;
+      animation-delay: 0.4s;
+    }
+
+    @keyframes dotFlashing {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+
     .input-container {
       padding: 1.5rem;
       background: white;
-      border-top: 2px solid #f8f9fa;
+      border-top: 2px solid var(--chat-white);
       display: flex;
       gap: 1rem;
     }
+
     input[type="text"] {
-      flex: 4;
+      flex: 1;
       padding: 1rem;
-      border: 2px solid #2d2d2d;
+      border: 2px solid var(--primary-black);
       border-radius: 12px;
       font-size: 1rem;
       transition: all 0.3s ease;
     }
+
     input[type="text"]:focus {
       outline: none;
-      border-color: #7c7c7c;
-      box-shadow: 0 0 0 3px rgba(124,124,124,0.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124, 124, 124, 0.2);
     }
+
     button {
-      flex: 1;
-      margin-left: 1rem;
-      padding: 1rem;
-      background: #2d2d2d;
+      padding: 1rem 2rem;
+      background: var(--primary-black);
       color: white;
       border: none;
       border-radius: 12px;
@@ -148,11 +195,22 @@
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.5rem;
     }
+
     button:hover {
-      background: #404040;
+      background: var(--secondary-black);
       transform: translateY(-2px);
+    }
+
+    .bot-message::before {
+      content: 'Pipi';
+      position: absolute;
+      top: -18px;
+      left: 0;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
     }
   </style>
 </head>
@@ -162,56 +220,98 @@
       <div class="chat-header">
         <h1>
           <div class="cat-avatar">
-            <i class="fas fa-paw"></i> <!-- If using Font Awesome, ensure the link is added -->
+            <i class="fas fa-paw"></i>
           </div>
-          Pipi - A Lovely AI Cat 
+          Pipi - Your AI Cat Companion
         </h1>
       </div>
+      
       <div class="messages-container" id="messagesContainer">
         <div class="message bot-message">Meow! I'm Pipi, your AI cat friend! How can I help you today? 🐾</div>
       </div>
+      
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Type your message to Pipi...">
         <button onclick="sendMessage()">
-          <i class="fas fa-paper-plane"></i> Send
+          <i class="fas fa-paper-plane"></i>
+          Send
         </button>
       </div>
     </div>
   </div>
+
   <script>
-    // Your JavaScript remains unchanged – it handles input, sending messages, and updating the UI.
-    document.getElementById('userInput').addEventListener('keypress', function(e) {
+    const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+    const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
+
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
     });
+
+    async function getApiKey() {
+      try {
+        const response = await fetch(GLITCH_URL);
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        if (!data.apiKey) {
+          throw new Error('API key not received from server');
+        }
+        
+        return data.apiKey;
+      } catch (error) {
+        console.error('Error fetching API key:', error);
+        return null;
+      }
+    }
+
     async function sendMessage() {
       const userInput = document.getElementById('userInput');
       const message = userInput.value.trim();
       if (!message) return;
+
+      // Add user message
       addMessage(message, 'user');
       userInput.value = '';
+      
+      // Add thinking indicator
       const thinkingDiv = addThinkingIndicator();
+
       try {
-        const response = await fetch('https://pipi-portal.glitch.me/api/chatbot', {
+        const API_KEY = await getApiKey();
+        if (!API_KEY) {
+          replaceThinkingMessage(thinkingDiv, "Sorry, I can't connect to my server right now. Please try again later.");
+          return;
+        }
+
+        const response = await fetch(API_URL, {
           method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+          },
           body: JSON.stringify({
-            model: 'deepseek-chat',
+            model: 'deepseek-reasoner',
             messages: [{ role: 'user', content: message }],
             temperature: 0.6,
-            max_tokens: 2048
+            max_tokens: 8192
           })
         });
+
         const data = await response.json();
         if (response.ok) {
-          replaceThinkingMessage(thinkingDiv, data.reply);
+          replaceThinkingMessage(thinkingDiv, data.choices[0].message.content);
+          playMeow();
         } else {
-          replaceThinkingMessage(thinkingDiv, `Sorry! ${data.error?.message || 'Deepseek failed to respond'}`);
+          replaceThinkingMessage(thinkingDiv, `Oops! Something went wrong: ${data.error?.message || 'Unknown error'}`);
         }
       } catch (error) {
         replaceThinkingMessage(thinkingDiv, `Connection error: ${error.message}`);
       }
     }
+
     function addMessage(content, role) {
       const container = document.getElementById('messagesContainer');
       const div = document.createElement('div');
@@ -221,6 +321,7 @@
       container.scrollTop = container.scrollHeight;
       return div;
     }
+
     function addThinkingIndicator() {
       const container = document.getElementById('messagesContainer');
       const div = document.createElement('div');
@@ -228,15 +329,25 @@
       div.innerHTML = `
         <div class="thinking-indicator">
           <div class="dot-flashing"></div>
-          Thinking...
+          Purring up an answer...
         </div>
       `;
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
       return div;
     }
+
     function replaceThinkingMessage(thinkingDiv, newContent) {
-      thinkingDiv.innerHTML = newContent + '<div style="margin-top: 10px; opacity: 0.6;">🐾</div>';
+      thinkingDiv.innerHTML = newContent;
+      // Add cat paw after response
+      thinkingDiv.innerHTML += '<div style="margin-top: 10px; opacity: 0.6;">🐾</div>';
+    }
+
+    // Add occasional meow sound when Pipi responds
+    function playMeow() {
+      const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3');
+      meow.volume = 0.3;
+      meow.play();
     }
   </script>
 </body>
