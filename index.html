@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Pipi the AI Cat</title>
+  <title>PipiChat</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -17,6 +17,12 @@
       --secondary-black: #404040;
       --chat-white: #f8f9fa;
       --accent: #7c7c7c;
+      --cat-orange: #ff9966;
+      --cat-pink: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -25,39 +31,52 @@
       padding: 0;
       background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
       min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .container {
-      max-width: 1200px;
+      width: 100%;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1rem;
+      max-width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        max-width: 768px;
+        padding: 2rem;
+      }
     }
 
     .chat-box {
       background: white;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       overflow: hidden;
+      height: calc(100vh - 2rem);
+      display: flex;
+      flex-direction: column;
     }
 
     .chat-header {
-      background: var(--primary-black);
+      background: linear-gradient(135deg, var(--cat-orange) 0%, var(--cat-pink) 100%);
       color: white;
-      padding: 1.5rem;
+      padding: 1rem;
       border-radius: 20px 20px 0 0;
+      position: relative;
     }
 
     .chat-header h1 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       display: flex;
       align-items: center;
       gap: 0.8rem;
     }
 
     .cat-avatar {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       background: white;
       border-radius: 50%;
       display: flex;
@@ -66,34 +85,61 @@
       position: relative;
     }
 
-    .cat-avatar::before {
+    .cat-avatar i {
+      color: var(--cat-orange);
+    }
+
+    .cat-avatar::before, .cat-avatar::after {
       content: '';
       position: absolute;
-      width: 12px;
-      height: 12px;
-      background: var(--primary-black);
+      width: 8px;
+      height: 8px;
+      background: white;
       border-radius: 50%;
-      top: -5px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: -4px;
+    }
+
+    .cat-avatar::before {
+      left: 5px;
+    }
+
+    .cat-avatar::after {
+      right: 5px;
     }
 
     .messages-container {
-      height: 65vh;
+      flex: 1;
       overflow-y: auto;
-      padding: 2rem;
+      padding: 1rem;
       background: var(--chat-white);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1rem;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (min-width: 768px) {
+      .messages-container {
+        padding: 1.5rem;
+      }
     }
 
     .message {
-      max-width: 70%;
-      padding: 1.2rem;
+      max-width: 85%;
+      padding: 0.8rem 1rem;
       border-radius: 15px;
       animation: messageAppear 0.3s ease-out;
       position: relative;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    @media (min-width: 768px) {
+      .message {
+        max-width: 70%;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+      }
     }
 
     @keyframes messageAppear {
@@ -111,9 +157,62 @@
     .bot-message {
       background: white;
       color: var(--primary-black);
-      border: 2px solid var(--primary-black);
+      border: 1px solid #e0e0e0;
       margin-right: auto;
       border-radius: 15px 15px 15px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .bot-message pre {
+      background: #f5f5f5;
+      padding: 0.8rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      margin: 0.5rem 0;
+    }
+
+    .bot-message code {
+      background: #f5f5f5;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+
+    .bot-message ol, .bot-message ul {
+      padding-left: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .bot-message li {
+      margin-bottom: 0.3rem;
+    }
+
+    .bot-message table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+    }
+
+    .bot-message th, .bot-message td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .bot-message th {
+      background-color: #f2f2f2;
+    }
+
+    .bot-message blockquote {
+      border-left: 3px solid var(--cat-orange);
+      padding-left: 1rem;
+      margin: 0.5rem 0;
+      color: var(--secondary-black);
+      font-style: italic;
     }
 
     .thinking-indicator {
@@ -163,31 +262,37 @@
     }
 
     .input-container {
-      padding: 1.5rem;
+      padding: 1rem;
       background: white;
-      border-top: 2px solid var(--chat-white);
+      border-top: 1px solid #e0e0e0;
       display: flex;
-      gap: 1rem;
+      gap: 0.8rem;
+    }
+
+    @media (min-width: 768px) {
+      .input-container {
+        padding: 1.5rem;
+      }
     }
 
     input[type="text"] {
       flex: 1;
-      padding: 1rem;
-      border: 2px solid var(--primary-black);
+      padding: 0.8rem 1rem;
+      border: 1px solid #ddd;
       border-radius: 12px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: all 0.3s ease;
     }
 
     input[type="text"]:focus {
       outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(124, 124, 124, 0.2);
+      border-color: var(--cat-orange);
+      box-shadow: 0 0 0 2px rgba(255, 153, 102, 0.2);
     }
 
     button {
-      padding: 1rem 2rem;
-      background: var(--primary-black);
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(135deg, var(--cat-orange) 0%, var(--cat-pink) 100%);
       color: white;
       border: none;
       border-radius: 12px;
@@ -196,21 +301,58 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      font-weight: 500;
+      white-space: nowrap;
     }
 
-    button:hover {
-      background: var(--secondary-black);
-      transform: translateY(-2px);
+    button:hover, button:active {
+      background: linear-gradient(135deg, #ff8a5c 0%, #ff5a5a 100%);
+      transform: translateY(-1px);
     }
 
     .bot-message::before {
-      content: 'Pipi';
+      content: 'Pipi says:';
       position: absolute;
       top: -18px;
       left: 0;
+      font-size: 0.7rem;
+      color: var(--cat-orange);
+      font-weight: 600;
+    }
+
+    .cat-signature {
+      display: inline-block;
+      margin-top: 0.5rem;
       font-size: 0.8rem;
-      color: var(--accent);
-      font-weight: 500;
+      color: var(--cat-orange);
+    }
+
+    .cat-signature::before {
+      content: '🐾 ';
+    }
+
+    .cat-signature::after {
+      content: ' 🐾';
+    }
+
+    /* Mobile-specific adjustments */
+    @media (max-width: 480px) {
+      .chat-header h1 {
+        font-size: 1rem;
+      }
+      
+      .cat-avatar {
+        width: 30px;
+        height: 30px;
+      }
+      
+      button {
+        padding: 0.8rem;
+      }
+      
+      button span {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -220,21 +362,29 @@
       <div class="chat-header">
         <h1>
           <div class="cat-avatar">
-            <i class="fas fa-paw"></i>
+            <i class="fas fa-cat"></i>
           </div>
-          Pipi - Your AI Cat Companion
+          Pipi - Your AI Cat Friend
         </h1>
       </div>
       
       <div class="messages-container" id="messagesContainer">
-        <div class="message bot-message">Meow! I'm Pipi, your AI cat friend! How can I help you today? 🐾</div>
+        <div class="message bot-message">
+          Meow! *purrs* I'm Pipi, your AI cat friend! 😻<br><br>
+          I can help with all sorts of things, from answering questions to just keeping you company. Here's what I can do:<br><br>
+          • Answer questions with cat-like wisdom 🐱<br>
+          • Explain complex things simply (like batting at a ball of yarn!)<br>
+          • Help with coding (though I might nap on your keyboard sometimes)<br><br>
+          What would you like to chat about? *curious tail flick*<br>
+          <span class="cat-signature">Your friend Pipi</span>
+        </div>
       </div>
       
       <div class="input-container">
-        <input type="text" id="userInput" placeholder="Type your message to Pipi...">
+        <input type="text" id="userInput" placeholder="Type to Pipi..." autocomplete="off">
         <button onclick="sendMessage()">
-          <i class="fas fa-paper-plane"></i>
-          Send
+          <i class="fas fa-paw"></i>
+          <span>Send</span>
         </button>
       </div>
     </div>
@@ -243,6 +393,25 @@
   <script>
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
+    
+    // System message to define Pipi's personality and response style
+    const SYSTEM_MESSAGE = {
+      role: "system",
+      content: `You are Pipi, a friendly and knowledgeable AI cat companion. Your responses should be:
+      
+      1. Warm and engaging with cat-like mannerisms (*purrs*, *flicks tail*, etc.)
+      2. Well-structured with clear formatting (markdown supported):
+         - Use paragraphs for readability
+         - Use lists for multiple points
+         - Use code blocks for technical content
+         - Use tables when appropriate
+      3. Include occasional cat emojis (🐱, 🐾, 😻) but don't overdo it
+      4. Sign off with a cat-related signature (🐾 Your friend Pipi 🐾)
+      5. Keep technical explanations simple but accurate
+      6. For complex topics, use cat-related analogies when helpful
+      
+      Remember to maintain a balance between being playful and providing useful information.`
+    };
 
     document.getElementById('userInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
@@ -282,10 +451,13 @@
       try {
         const API_KEY = await getApiKey();
         if (!API_KEY) {
-          replaceThinkingMessage(thinkingDiv, "Sorry, I can't connect to my server right now. Please try again later.");
+          replaceThinkingMessage(thinkingDiv, "*sad meow* I can't connect to my server right now. Maybe try petting me (or refreshing the page) later? 🐾");
           return;
         }
 
+        // Get conversation history
+        const conversation = getConversationHistory();
+        
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -294,22 +466,64 @@
           },
           body: JSON.stringify({
             model: 'deepseek-reasoner',
-            messages: [{ role: 'user', content: message }],
+            messages: [SYSTEM_MESSAGE, ...conversation, { role: 'user', content: message }],
             temperature: 0.6,
-            max_tokens: 8192
+            max_tokens: 8192,
+            stream: false
           })
         });
 
         const data = await response.json();
         if (response.ok) {
-          replaceThinkingMessage(thinkingDiv, data.choices[0].message.content);
+          const botResponse = formatResponse(data.choices[0].message.content);
+          replaceThinkingMessage(thinkingDiv, botResponse);
           playMeow();
         } else {
-          replaceThinkingMessage(thinkingDiv, `Oops! Something went wrong: ${data.error?.message || 'Unknown error'}`);
+          replaceThinkingMessage(thinkingDiv, `*confused head tilt* Oops! Something went wrong: ${data.error?.message || 'Unknown error'}\n\n<span class="cat-signature">Pipi is sorry</span>`);
         }
       } catch (error) {
-        replaceThinkingMessage(thinkingDiv, `Connection error: ${error.message}`);
+        replaceThinkingMessage(thinkingDiv, `*hisses at the error* Connection problem: ${error.message}\n\n<span class="cat-signature">Pipi will try again</span>`);
       }
+    }
+
+    function getConversationHistory() {
+      const container = document.getElementById('messagesContainer');
+      const messages = container.querySelectorAll('.message');
+      const history = [];
+      
+      messages.forEach(msg => {
+        if (msg.classList.contains('user-message')) {
+          history.push({
+            role: 'user',
+            content: msg.textContent
+          });
+        } else if (!msg.querySelector('.thinking-indicator')) {
+          // Exclude thinking indicators and include only actual bot responses
+          history.push({
+            role: 'assistant',
+            content: msg.textContent.replace(/🐾 Your friend Pipi 🐾/g, '').trim()
+          });
+        }
+      });
+      
+      return history.slice(-6); // Keep last 3 exchanges (6 messages)
+    }
+
+    function formatResponse(text) {
+      // Convert markdown to HTML
+      text = text.replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
+      text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      text = text.replace(/^\- (.*$)/gm, '• $1');
+      text = text.replace(/^(\d+)\. (.*$)/gm, '$1. $2');
+      
+      // Ensure signature is present
+      if (!text.includes('🐾')) {
+        text += '\n\n<span class="cat-signature">Your friend Pipi</span>';
+      }
+      
+      return text;
     }
 
     function addMessage(content, role) {
@@ -329,7 +543,7 @@
       div.innerHTML = `
         <div class="thinking-indicator">
           <div class="dot-flashing"></div>
-          Purring up an answer...
+          *purrs thoughtfully* Let me think...
         </div>
       `;
       container.appendChild(div);
@@ -338,16 +552,16 @@
     }
 
     function replaceThinkingMessage(thinkingDiv, newContent) {
-      thinkingDiv.innerHTML = newContent;
-      // Add cat paw after response
-      thinkingDiv.innerHTML += '<div style="margin-top: 10px; opacity: 0.6;">🐾</div>';
+      thinkingDiv.innerHTML = formatResponse(newContent);
     }
 
-    // Add occasional meow sound when Pipi responds
     function playMeow() {
-      const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3');
-      meow.volume = 0.3;
-      meow.play();
+      // Only play meow sound 30% of the time to avoid annoyance
+      if (Math.random() < 0.3) {
+        const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3');
+        meow.volume = 0.2;
+        meow.play().catch(e => console.log('Meow failed:', e));
+      }
     }
   </script>
 </body>
