@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>PipiChat</title>
+  <title>Pipi the AI Cat</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -364,21 +364,21 @@
           <div class="cat-avatar">
             <i class="fas fa-cat"></i>
           </div>
-          Pipi - Your AI Cat Friend
+          Pipi - Your AI Cat Companion
         </h1>
       </div>
       
-      <div class="messages-container" id="messagesContainer">
-        <div class="message bot-message">
-          Meow! *purrs* I'm Pipi, your AI cat friend! 😻<br><br>
-          I can help with all sorts of things, from answering questions to just keeping you company. Here's what I can do:<br><br>
-          • Answer questions with cat-like wisdom 🐱<br>
-          • Explain complex things simply (like batting at a ball of yarn!)<br>
-          • Help with coding (though I might nap on your keyboard sometimes)<br><br>
-          What would you like to chat about? *curious tail flick*<br>
-          <span class="cat-signature">Your friend Pipi</span>
-        </div>
-      </div>
+     <div class="messages-container" id="messagesContainer">
+  <div class="message bot-message" id="welcomeMessage">
+    喵！*呼噜呼噜* 我是Pipi，你的AI猫咪朋友！😻<br><br>
+    我可以帮你做很多事情，从回答问题到陪伴你。这是我的能力：<br><br>
+    • 用猫咪的智慧回答你的问题 🐱<br>
+    • 用简单的方式解释复杂的事情（就像玩毛线球一样简单！）<br>
+    • 给你讲不太好笑的笑话（虽然我有时会在键盘上打盹）<br><br>
+    今天想聊些什么呢？*好奇地甩尾巴*<br>
+    <span class="cat-signature">你的朋友 Pipi</span>
+  </div>
+</div>
       
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Type to Pipi..." autocomplete="off">
@@ -455,7 +455,7 @@
           return;
         }
 
-        // Get conversation history
+        // Get conversation history (excluding the initial welcome message)
         const conversation = getConversationHistory();
         
         const response = await fetch(API_URL, {
@@ -467,8 +467,8 @@
           body: JSON.stringify({
             model: 'deepseek-reasoner',
             messages: [SYSTEM_MESSAGE, ...conversation, { role: 'user', content: message }],
-            temperature: 0.6,
-            max_tokens: 8192,
+            temperature: 0.7,
+            max_tokens: 16384,
             stream: false
           })
         });
@@ -492,6 +492,9 @@
       const history = [];
       
       messages.forEach(msg => {
+        // Skip the initial welcome message (has id="welcomeMessage")
+        if (msg.id === 'welcomeMessage') return;
+        
         if (msg.classList.contains('user-message')) {
           history.push({
             role: 'user',
