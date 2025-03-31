@@ -368,17 +368,13 @@
         </h1>
       </div>
       
-     <div class="messages-container" id="messagesContainer">
-  <div class="message bot-message" id="welcomeMessage">
-    喵！*呼噜呼噜* 我是Pipi，你的AI猫咪朋友！😻<br><br>
-    我可以帮你做很多事情，从回答问题到陪伴你。这是我的能力：<br><br>
-    • 用猫咪的智慧回答你的问题 🐱<br>
-    • 用简单的方式解释复杂的事情（就像玩毛线球一样简单！）<br>
-    • 给你讲不太好笑的笑话（虽然我有时会在键盘上打盹）<br><br>
-    今天想聊些什么呢？*好奇地甩尾巴*<br>
-    <span class="cat-signature">你的朋友 Pipi</span>
-  </div>
-</div>
+      <div class="messages-container" id="messagesContainer">
+        <div class="message bot-message" id="welcomeMessage">
+          Meow! *purrs* I'm Pipi, your AI cat friend! 😻<br><br>
+          I can help with all sorts of things, from answering questions to just keeping you company. What would you like to chat about? *curious tail flick*<br>
+          <span class="cat-signature">Your friend Pipi</span>
+        </div>
+      </div>
       
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Type to Pipi..." autocomplete="off">
@@ -390,7 +386,7 @@
     </div>
   </div>
 
-<script>
+  <script>
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     
@@ -401,7 +397,12 @@
     };
 
     // Track conversation history
-    let conversationHistory = [];
+    let conversationHistory = [
+      {
+        role: "assistant",
+        content: "Meow! *purrs* I'm Pipi, your AI cat friend! 😻\n\nI can help with all sorts of things, from answering questions to just keeping you company. What would you like to chat about? *curious tail flick*\n\n🐾 Your friend Pipi 🐾"
+      }
+    ];
     
     document.getElementById('userInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
@@ -454,7 +455,7 @@
             model: 'deepseek-reasoner',
             messages: messages,
             temperature: 0.7,
-            max_tokens: 6000
+            max_tokens: 8000
           })
         });
 
@@ -487,7 +488,11 @@
         }
       }
       
-      // Ensure we don't exceed context window
+      // Ensure the last message is from user
+      if (messages.length > 1 && messages[messages.length-1].role === 'assistant') {
+        messages.pop();
+      }
+      
       return messages.slice(-10); // Keep last 5 exchanges
     }
 
@@ -531,6 +536,6 @@
           .play().catch(e => console.log('Meow failed'));
       }
     }
-</script>
+  </script>
 </body>
 </html>
