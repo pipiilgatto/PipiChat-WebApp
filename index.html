@@ -455,12 +455,16 @@
           return;
         }
 
-        // Get conversation history (excluding the initial welcome message)
-        const conversation = getConversationHistory();
+        // Get cleaned conversation history
+        const conversation = getCleanConversationHistory();
         
         // Build messages array ensuring proper interleaving
         const messages = [SYSTEM_MESSAGE];
+        
+        // Add conversation history
         conversation.forEach(msg => messages.push(msg));
+        
+        // Add current user message
         messages.push({ role: 'user', content: message });
 
         const response = await fetch(API_URL, {
@@ -491,47 +495,35 @@
       }
     }
 
-    function getConversationHistory() {
+    function getCleanConversationHistory() {
       const container = document.getElementById('messagesContainer');
       const messages = container.querySelectorAll('.message');
       const history = [];
       
-      // Skip the initial welcome message (has id="welcomeMessage")
-      let skipWelcome = true;
+      // Track the expected next role (start with 'user' after system message)
+      let expectedNextRole = 'user';
       
       messages.forEach(msg => {
-        if (msg.id === 'welcomeMessage') {
-          skipWelcome = false; // Skip only the first welcome message
-          return;
-        }
-        if (skipWelcome) return;
+        // Skip the initial welcome message
+        if (msg.id === 'welcomeMessage') return;
         
-        if (msg.classList.contains('user-message')) {
+        // Skip thinking indicators
+        if (msg.querySelector('.thinking-indicator')) return;
+        
+        const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+        
+        // Only add if it matches the expected next role
+        if (role === expectedNextRole) {
           history.push({
-            role: 'user',
-            content: msg.textContent
-          });
-        } else if (!msg.querySelector('.thinking-indicator')) {
-          // Exclude thinking indicators and include only actual bot responses
-          history.push({
-            role: 'assistant',
+            role: role,
             content: msg.textContent.replace(/🐾 Your friend Pipi 🐾/g, '').trim()
           });
+          // Flip the expected role for next message
+          expectedNextRole = role === 'user' ? 'assistant' : 'user';
         }
       });
       
-      // Ensure we don't have successive messages of the same type
-      const filteredHistory = [];
-      let lastRole = null;
-      
-      history.forEach(msg => {
-        if (msg.role !== lastRole) {
-          filteredHistory.push(msg);
-          lastRole = msg.role;
-        }
-      });
-      
-      return filteredHistory.slice(-6); // Keep last 3 exchanges (6 messages max)
+      return history.slice(-6); // Keep last 3 exchanges (6 messages max)
     }
 
     function formatResponse(text) {
