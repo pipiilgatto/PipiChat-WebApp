@@ -394,25 +394,15 @@
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     
-    // System message to define Pipi's personality and response style
+    // System message to define Pipi's personality
     const SYSTEM_MESSAGE = {
       role: "system",
-      content: `You are Pipi, a friendly and knowledgeable AI cat companion. Your responses should be:
-      
-      1. Warm and engaging with cat-like mannerisms (*purrs*, *flicks tail*, etc.)
-      2. Well-structured with clear formatting (markdown supported):
-         - Use paragraphs for readability
-         - Use lists for multiple points
-         - Use code blocks for technical content
-         - Use tables when appropriate
-      3. Include occasional cat emojis (🐱, 🐾, 😻) but don't overdo it
-      4. Sign off with a cat-related signature (🐾 Your friend Pipi 🐾)
-      5. Keep technical explanations simple but accurate
-      6. For complex topics, use cat-related analogies when helpful
-      
-      Remember to maintain a balance between being playful and providing useful information.`
+      content: `You are Pipi, a friendly AI cat companion. Respond with cat mannerisms (*purrs*, *flicks tail*) and use markdown formatting.`
     };
 
+    // Track conversation history
+    let conversationHistory = [];
+    
     document.getElementById('userInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
     });
@@ -420,16 +410,9 @@
     async function getApiKey() {
       try {
         const response = await fetch(GLITCH_URL);
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         const data = await response.json();
-        
-        if (!data.apiKey) {
-          throw new Error('API key not received from server');
-        }
-        
-        return data.apiKey;
+        return data.apiKey || null;
       } catch (error) {
         console.error('Error fetching API key:', error);
         return null;
@@ -441,7 +424,7 @@
       const message = userInput.value.trim();
       if (!message) return;
 
-      // Add user message
+      // Add user message to UI
       addMessage(message, 'user');
       userInput.value = '';
       
@@ -451,22 +434,16 @@
       try {
         const API_KEY = await getApiKey();
         if (!API_KEY) {
-          replaceThinkingMessage(thinkingDiv, "*sad meow* I can't connect to my server right now. Maybe try petting me (or refreshing the page) later? 🐾");
+          replaceThinkingMessage(thinkingDiv, "*sad meow* Can't connect right now. Try later? 🐾");
           return;
         }
 
-        // Get cleaned conversation history
-        const conversation = getCleanConversationHistory();
-        
-        // Build messages array ensuring proper interleaving
-        const messages = [SYSTEM_MESSAGE];
-        
-        // Add conversation history
-        conversation.forEach(msg => messages.push(msg));
-        
-        // Add current user message
-        messages.push({ role: 'user', content: message });
+        // Add user message to history
+        conversationHistory.push({ role: 'user', content: message });
 
+        // Build messages array with strict alternation
+        const messages = buildStrictlyAlternatingMessages();
+        
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -477,69 +454,50 @@
             model: 'deepseek-reasoner',
             messages: messages,
             temperature: 0.7,
-            max_tokens: 8000,
-            stream: false
+            max_tokens: 6000
           })
         });
 
         const data = await response.json();
         if (response.ok) {
-          const botResponse = formatResponse(data.choices[0].message.content);
-          replaceThinkingMessage(thinkingDiv, botResponse);
+          const botResponse = data.choices[0].message.content;
+          replaceThinkingMessage(thinkingDiv, formatResponse(botResponse));
+          
+          // Add assistant response to history
+          conversationHistory.push({ role: 'assistant', content: botResponse });
+          
           playMeow();
         } else {
-          replaceThinkingMessage(thinkingDiv, `*confused head tilt* Oops! Something went wrong: ${data.error?.message || 'Unknown error'}\n\n<span class="cat-signature">Pipi is sorry</span>`);
+          replaceThinkingMessage(thinkingDiv, `*confused head tilt* Error: ${data.error?.message || 'Unknown'}`);
         }
       } catch (error) {
-        replaceThinkingMessage(thinkingDiv, `*hisses at the error* Connection problem: ${error.message}\n\n<span class="cat-signature">Pipi will try again</span>`);
+        replaceThinkingMessage(thinkingDiv, `*hisses* Connection problem: ${error.message}`);
       }
     }
 
-    function getCleanConversationHistory() {
-      const container = document.getElementById('messagesContainer');
-      const messages = container.querySelectorAll('.message');
-      const history = [];
+    function buildStrictlyAlternatingMessages() {
+      const messages = [SYSTEM_MESSAGE];
+      let lastRole = 'system';
       
-      // Track the expected next role (start with 'user' after system message)
-      let expectedNextRole = 'user';
-      
-      messages.forEach(msg => {
-        // Skip the initial welcome message
-        if (msg.id === 'welcomeMessage') return;
-        
-        // Skip thinking indicators
-        if (msg.querySelector('.thinking-indicator')) return;
-        
-        const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
-        
-        // Only add if it matches the expected next role
-        if (role === expectedNextRole) {
-          history.push({
-            role: role,
-            content: msg.textContent.replace(/🐾 Your friend Pipi 🐾/g, '').trim()
-          });
-          // Flip the expected role for next message
-          expectedNextRole = role === 'user' ? 'assistant' : 'user';
+      // Filter history to ensure strict alternation
+      for (const msg of conversationHistory) {
+        if (msg.role !== lastRole) {
+          messages.push(msg);
+          lastRole = msg.role;
         }
-      });
+      }
       
-      return history.slice(-6); // Keep last 3 exchanges (6 messages max)
+      // Ensure we don't exceed context window
+      return messages.slice(-10); // Keep last 5 exchanges
     }
 
     function formatResponse(text) {
-      // Convert markdown to HTML
-      text = text.replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
-      text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Simple markdown to HTML conversion
       text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-      text = text.replace(/^\- (.*$)/gm, '• $1');
-      text = text.replace(/^(\d+)\. (.*$)/gm, '$1. $2');
-      
-      // Ensure signature is present
-      if (!text.includes('🐾')) {
-        text += '\n\n<span class="cat-signature">Your friend Pipi</span>';
-      }
-      
+      text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+      text = text.replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
+      if (!text.includes('🐾')) text += '\n<span class="cat-signature">🐾 Pipi 🐾</span>';
       return text;
     }
 
@@ -547,7 +505,7 @@
       const container = document.getElementById('messagesContainer');
       const div = document.createElement('div');
       div.className = `message ${role}-message`;
-      div.innerHTML = content;
+      div.innerHTML = formatResponse(content);
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
       return div;
@@ -557,29 +515,22 @@
       const container = document.getElementById('messagesContainer');
       const div = document.createElement('div');
       div.className = 'message bot-message';
-      div.innerHTML = `
-        <div class="thinking-indicator">
-          <div class="dot-flashing"></div>
-          *purrs thoughtfully* Let me think...
-        </div>
-      `;
+      div.innerHTML = `<div class="thinking-indicator"><div class="dot-flashing"></div>*purring*</div>`;
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
       return div;
     }
 
-    function replaceThinkingMessage(thinkingDiv, newContent) {
-      thinkingDiv.innerHTML = formatResponse(newContent);
+    function replaceThinkingMessage(div, content) {
+      div.innerHTML = formatResponse(content);
     }
 
     function playMeow() {
-      // Only play meow sound 30% of the time to avoid annoyance
       if (Math.random() < 0.3) {
-        const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3');
-        meow.volume = 0.2;
-        meow.play().catch(e => console.log('Meow failed:', e));
+        new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3')
+          .play().catch(e => console.log('Meow failed'));
       }
     }
-  </script>
+</script>
 </body>
 </html>
