@@ -390,7 +390,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     
@@ -458,6 +458,11 @@
         // Get conversation history (excluding the initial welcome message)
         const conversation = getConversationHistory();
         
+        // Build messages array ensuring proper interleaving
+        const messages = [SYSTEM_MESSAGE];
+        conversation.forEach(msg => messages.push(msg));
+        messages.push({ role: 'user', content: message });
+
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
@@ -466,8 +471,8 @@
           },
           body: JSON.stringify({
             model: 'deepseek-reasoner',
-            messages: [SYSTEM_MESSAGE, ...conversation, { role: 'user', content: message }],
-            temperature: 0.6,
+            messages: messages,
+            temperature: 0.7,
             max_tokens: 8000,
             stream: false
           })
@@ -491,9 +496,15 @@
       const messages = container.querySelectorAll('.message');
       const history = [];
       
+      // Skip the initial welcome message (has id="welcomeMessage")
+      let skipWelcome = true;
+      
       messages.forEach(msg => {
-        // Skip the initial welcome message (has id="welcomeMessage")
-        if (msg.id === 'welcomeMessage') return;
+        if (msg.id === 'welcomeMessage') {
+          skipWelcome = false; // Skip only the first welcome message
+          return;
+        }
+        if (skipWelcome) return;
         
         if (msg.classList.contains('user-message')) {
           history.push({
@@ -509,7 +520,18 @@
         }
       });
       
-      return history.slice(-6); // Keep last 3 exchanges (6 messages)
+      // Ensure we don't have successive messages of the same type
+      const filteredHistory = [];
+      let lastRole = null;
+      
+      history.forEach(msg => {
+        if (msg.role !== lastRole) {
+          filteredHistory.push(msg);
+          lastRole = msg.role;
+        }
+      });
+      
+      return filteredHistory.slice(-6); // Keep last 3 exchanges (6 messages max)
     }
 
     function formatResponse(text) {
