@@ -2,7 +2,7 @@
     "name": "Pipi the AI Cat",
     "short_name": "Pipi",
     "description": "Your AI cat companion",
-    "start_url": "/",
+    "start_url": ".",
     "display": "standalone",
     "background_color": "#f8f9fa",
     "theme_color": "#2d2d2d",
