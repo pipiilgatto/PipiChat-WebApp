@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>PipiChat</title>
+  <title>AI 皮皮</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <link rel="apple-touch-icon" href="icon.png" />
   <link rel="manifest" href="manifest.json" />
@@ -24,7 +24,8 @@
       font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+      background: url('background.jpg') repeat;
+      background-size: 200px;
       min-height: 100vh;
     }
 
@@ -37,7 +38,7 @@
     }
 
     .chat-box {
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       overflow: hidden;
@@ -48,18 +49,17 @@
     }
 
     .chat-header {
-      background: var(--primary-black);
-      color: white;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      color: var(--primary-black);
       padding: 1rem;
       border-radius: 20px 20px 0 0;
-    }
-
-    .chat-header h1 {
-      margin: 0;
-      font-size: 1.3rem;
       display: flex;
       align-items: center;
       gap: 0.8rem;
+      font-weight: 600;
+      font-size: 1.4rem;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.5);
     }
 
     .cat-avatar {
@@ -215,13 +215,14 @@
   </style>
 </head>
 <body>
-  <div class="container">
+ <div class="container">
     <div class="chat-box">
       <div class="chat-header">
-        <h1><div class="cat-avatar"><i class="fas fa-paw"></i></div> 皮皮也是你的AI伙伴</h1>
+        <div class="cat-avatar"><i class="fas fa-paw"></i></div>
+        AI 皮皮
       </div>
       <div class="messages-container" id="messagesContainer">
-        <div class="message bot-message"><div>Meow~! 我是皮皮, 你的可爱猫猫 🐱. 快问我问题，我会喵喵喵! 🐾</div></div>
+        <div class="message bot-message"><div>Meow~! 我是皮皮, 你的可爱猫猫 🐱. 快快问我问题，喵喵喵～ 🐾</div></div>
       </div>
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
