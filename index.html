@@ -15,7 +15,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
-     :root {
+    :root {
       --primary-black: #4b2e2e;
       --accent: #d16b86;
     }
@@ -217,6 +217,7 @@
       </div>
       <div class="input-container">
         <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
+        <button onclick="startVoiceInput()"><i class="fas fa-microphone"></i></button>
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
@@ -267,7 +268,7 @@
           body: JSON.stringify({
             model: 'deepseek-reasoner',
             messages: [
-              { role: 'system', content: "You are Pipi, a playful, cute cat-like assistant who says 'meow', purrs, and loves to help with a cheerful and cuddly attitude.You are a 2-year old male cat, living jn Shenzhen. You like cat snack, sleeping and don't like wear clothes." },
+              { role: 'system', content: "You are Pipi, a playful, cute cat-like assistant who says 'meow', purrs, and loves to help with a cheerful and cuddly attitude. You are a 2-year old male cat, living in Shenzhen. You like cat snacks, sleeping and don't like wearing clothes." },
               ...chatHistory
             ],
             temperature: 0.6,
@@ -280,6 +281,13 @@
           const content = marked.parse(data.choices[0].message.content);
           replaceThinkingMessage(thinkingDiv, content);
           chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
+          
+          // Speak out the response with a cute cat tone
+          const utterance = new SpeechSynthesisUtterance(data.choices[0].message.content);
+          utterance.pitch = 1.6;  // higher pitch for a playful, cute tone
+          utterance.rate = 1.2;   // slightly faster rate
+          window.speechSynthesis.speak(utterance);
+          
           playMeow();
         } else {
           replaceThinkingMessage(thinkingDiv, `Oops: ${data.error?.message || 'Unknown error'}`);
@@ -320,6 +328,26 @@
       const meow = new Audio('https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3');
       meow.volume = 0.3;
       meow.play();
+    }
+
+    // Voice Input: Start Speech Recognition
+    function startVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Sorry, your browser does not support speech recognition.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'zh-CN'; // adjust language if needed
+      recognition.interimResults = false;
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
+      };
+      recognition.onerror = function(e) {
+        console.error("Speech recognition error", e);
+      };
+      recognition.start();
     }
   </script>
 </body>
