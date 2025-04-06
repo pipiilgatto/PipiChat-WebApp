@@ -124,7 +124,7 @@
     }
 
     .bot-message::before {
-      content: 'Pipi';
+      content: '皮皮';
       position: absolute;
       top: -18px;
       left: 0;
@@ -177,16 +177,9 @@
       gap: 0.5rem;
     }
 
-    /* Ensure microphone button appears on the left */
-    .input-container button:first-child {
-      order: 1;
-    }
+    /* Only text input and send button are used */
     .input-container input {
-      order: 2;
       flex: 1;
-    }
-    .input-container button:last-child {
-      order: 3;
     }
 
     input[type="text"] {
@@ -241,8 +234,7 @@
         <div class="message bot-message"><div>喵~ 我是皮皮，一只聪明又可爱的 AI 猫咪，有什么我可以帮忙的喵?🐱🐾</div></div>
       </div>
       <div class="input-container">
-        <button onclick="startVoiceInput()"><i class="fas fa-microphone"></i></button>
-        <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
+        <input type="text" id="userInput" placeholder="有什么问题要问皮皮呢..." />
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
@@ -253,12 +245,9 @@
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     const chatHistory = [];
 
-    // Log keypress event on the input box for debugging
+    // Trigger sendMessage() when Enter key is pressed.
     document.getElementById('userInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        console.log("Enter pressed. Triggering sendMessage()");
-        sendMessage();
-      }
+      if (e.key === 'Enter') sendMessage();
     });
 
     async function getApiKey() {
@@ -275,7 +264,6 @@
     async function sendMessage() {
       const userInput = document.getElementById('userInput');
       const message = userInput.value.trim();
-      console.log("sendMessage() called with message:", message);
       if (!message) return;
 
       addMessage(message, 'user');
@@ -302,7 +290,7 @@
               { role: 'system', content: "You are Pipi, a playful, cute cat-like assistant who says 'meow', purrs, and loves to help with a cheerful and cuddly attitude. You are a 2-year old male cat, living in Shenzhen. You like cat snacks, sleeping and don't like wearing clothes." },
               ...chatHistory
             ],
-            temperature: 0.6,
+            temperature: 0.7,
             max_tokens: 8192
           })
         });
@@ -310,7 +298,6 @@
 
         if (response.ok) {
           const aiText = data.choices[0].message.content;
-          console.log("AI response received:", aiText);
           // Append a play sound button to the AI reply.
           const formatted = marked.parse(aiText) +
             `<button class="play-sound" onclick="playAudioMessage(this)" data-message="${encodeURIComponent(aiText)}"><i class="fas fa-volume-up"></i></button>`;
@@ -359,63 +346,13 @@
       meow.play();
     }
 
-    // Speak the AI message with a cute cat tone when the play icon is clicked.
+    // When the play icon button is clicked, speak the AI message with a cute cat tone.
     function playAudioMessage(button) {
       const message = decodeURIComponent(button.getAttribute("data-message"));
       const utterance = new SpeechSynthesisUtterance(message);
       utterance.pitch = 1.6;
       utterance.rate = 1.2;
       window.speechSynthesis.speak(utterance);
-    }
-
-    // Start voice input with a 6-second silence threshold.
-    function startVoiceInput() {
-      console.log("startVoiceInput() triggered");
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Sorry, your browser does not support speech recognition.");
-        return;
-      }
-      let finalTranscript = "";
-      let sent = false;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'zh-CN';
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      let silenceTimer = null;
-      recognition.onresult = function(event) {
-        let interimTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-        console.log("Recognized transcript:", finalTranscript + interimTranscript);
-        document.getElementById('userInput').value = finalTranscript + interimTranscript;
-        if (silenceTimer) clearTimeout(silenceTimer);
-        // If no new speech is detected within 6 seconds, stop and send the message.
-        silenceTimer = setTimeout(function() {
-          if (!sent) {
-            sent = true;
-            console.log("6 seconds silence reached. Stopping recognition and sending message.");
-            recognition.stop();
-            sendMessage();
-          }
-        }, 6000);
-      };
-      recognition.onerror = function(e) {
-        console.error("Speech recognition error", e);
-      };
-      recognition.onend = function() {
-        if (!sent && document.getElementById('userInput').value.trim() !== "") {
-          sent = true;
-          console.log("Speech recognition ended. Sending message.");
-          sendMessage();
-        }
-      };
-      recognition.start();
     }
   </script>
 </body>
