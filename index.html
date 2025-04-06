@@ -124,7 +124,7 @@
     }
 
     .bot-message::before {
-      content: 'Pipi';
+      content: '皮皮';
       position: absolute;
       top: -18px;
       left: 0;
@@ -253,7 +253,7 @@
         <div class="message bot-message"><div>喵~ 我是皮皮，一只聪明又可爱的 AI 猫咪，有什么我可以帮忙的喵?🐱🐾</div></div>
       </div>
       <div class="input-container">
-        <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
+        <input type="text" id="userInput" placeholder="要问皮皮什么问题呢？" />
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
@@ -306,7 +306,7 @@
             'Authorization': `Bearer ${API_KEY}`
           },
           body: JSON.stringify({
-            model: 'deepseek-reasoner',
+            model: 'deepseek-chat',
             messages: [
               { role: 'system', content: "You are Pipi, a playful, cute cat-like assistant who says 'meow', purrs, and loves to help with a cheerful and cuddly attitude. You are a 2-year old male cat, living in Shenzhen. You like cat snacks, sleeping and don't like wearing clothes." },
               ...chatHistory
