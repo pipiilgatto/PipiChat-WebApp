@@ -177,8 +177,19 @@
       gap: 0.5rem;
     }
 
-    input[type="text"] {
+    /* Reorder elements so microphone button is on the left */
+    .input-container button:first-child {
+      order: 1;
+    }
+    .input-container input {
+      order: 2;
       flex: 1;
+    }
+    .input-container button:last-child {
+      order: 3;
+    }
+
+    input[type="text"] {
       padding: 0.8rem;
       border: 2px solid var(--primary-black);
       border-radius: 12px;
@@ -193,6 +204,10 @@
 
     button {
       background: #ff8fb1;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     button:hover {
@@ -202,6 +217,16 @@
     .bot-message > div {
       font-size: 0.95rem;
       line-height: 1.5;
+    }
+
+    /* Style for the play sound button in the AI reply */
+    .play-sound {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: var(--accent);
     }
   </style>
 </head>
@@ -216,8 +241,8 @@
         <div class="message bot-message"><div>喵~ 我是皮皮，一只聪明又可爱的 AI 猫咪，有什么我可以帮忙的喵?🐱🐾</div></div>
       </div>
       <div class="input-container">
-        <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
         <button onclick="startVoiceInput()"><i class="fas fa-microphone"></i></button>
+        <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
@@ -278,16 +303,12 @@
         const data = await response.json();
 
         if (response.ok) {
-          const content = marked.parse(data.choices[0].message.content);
-          replaceThinkingMessage(thinkingDiv, content);
-          chatHistory.push({ role: 'assistant', content: data.choices[0].message.content });
-          
-          // Speak out the response with a cute cat tone
-          const utterance = new SpeechSynthesisUtterance(data.choices[0].message.content);
-          utterance.pitch = 1.6;  // higher pitch for a playful, cute tone
-          utterance.rate = 1.2;   // slightly faster rate
-          window.speechSynthesis.speak(utterance);
-          
+          const aiText = data.choices[0].message.content;
+          // Append a play sound button to the AI reply
+          const formatted = marked.parse(aiText) +
+            `<button class="play-sound" onclick="playAudioMessage(this)" data-message="${encodeURIComponent(aiText)}"><i class="fas fa-volume-up"></i></button>`;
+          replaceThinkingMessage(thinkingDiv, formatted);
+          chatHistory.push({ role: 'assistant', content: aiText });
           playMeow();
         } else {
           replaceThinkingMessage(thinkingDiv, `Oops: ${data.error?.message || 'Unknown error'}`);
@@ -330,25 +351,39 @@
       meow.play();
     }
 
-    // Voice Input: Start Speech Recognition
+    // When the play icon button is clicked, speak the AI message with a cute cat tone.
+    function playAudioMessage(button) {
+      const message = decodeURIComponent(button.getAttribute("data-message"));
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.pitch = 1.6;
+      utterance.rate = 1.2;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Voice Input: Start Speech Recognition with a 6-second silence threshold.
     function startVoiceInput() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("Sorry, your browser does not support speech recognition.");
         return;
       }
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'zh-CN'; // adjust language if needed
-      recognition.interimResults = false;
+      let finalTranscript = "";
+      let sent = false;
+      let recognition = new SpeechRecognition();
+      recognition.lang = 'zh-CN';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      let silenceTimer = null;
       recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('userInput').value = transcript;
-      };
-      recognition.onerror = function(e) {
-        console.error("Speech recognition error", e);
-      };
-      recognition.start();
-    }
-  </script>
-</body>
-</html>
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        document.getElementById('userInput').value = finalTranscript + interimTranscript;
+        if (silenceTimer) {
+          clearTimeout(silenceTimer);
+        }
