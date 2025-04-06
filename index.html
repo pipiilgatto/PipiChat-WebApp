@@ -124,7 +124,7 @@
     }
 
     .bot-message::before {
-      content: '皮皮';
+      content: 'Pipi';
       position: absolute;
       top: -18px;
       left: 0;
@@ -221,6 +221,25 @@
       margin-top: 10px;
       color: var(--accent);
     }
+
+    /* Style for animated three dots icon */
+    .dots {
+      display: inline-block;
+    }
+    .dots span {
+      animation: blink 1.4s infinite both;
+      font-weight: bold;
+    }
+    .dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0%, 20%, 40%, 60%, 80%, 100% { opacity: 1; }
+      10%, 30%, 50%, 70%, 90% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -234,7 +253,7 @@
         <div class="message bot-message"><div>喵~ 我是皮皮，一只聪明又可爱的 AI 猫咪，有什么我可以帮忙的喵?🐱🐾</div></div>
       </div>
       <div class="input-container">
-        <input type="text" id="userInput" placeholder="有什么问题要问皮皮呢..." />
+        <input type="text" id="userInput" placeholder="Ask Pipi anything..." />
         <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
       </div>
     </div>
@@ -244,6 +263,8 @@
     const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     const chatHistory = [];
+    let currentUtterance = null;
+    let currentButton = null;
 
     // Trigger sendMessage() when Enter key is pressed.
     document.getElementById('userInput').addEventListener('keypress', (e) => {
@@ -290,7 +311,7 @@
               { role: 'system', content: "You are Pipi, a playful, cute cat-like assistant who says 'meow', purrs, and loves to help with a cheerful and cuddly attitude. You are a 2-year old male cat, living in Shenzhen. You like cat snacks, sleeping and don't like wearing clothes." },
               ...chatHistory
             ],
-            temperature: 0.7,
+            temperature: 0.6,
             max_tokens: 8192
           })
         });
@@ -300,7 +321,7 @@
           const aiText = data.choices[0].message.content;
           // Append a play sound button to the AI reply.
           const formatted = marked.parse(aiText) +
-            `<button class="play-sound" onclick="playAudioMessage(this)" data-message="${encodeURIComponent(aiText)}"><i class="fas fa-volume-up"></i></button>`;
+            `<button class="play-sound" onclick="toggleAudio(this)" data-message="${encodeURIComponent(aiText)}" data-playing="false"><i class="fas fa-volume-up"></i></button>`;
           replaceThinkingMessage(thinkingDiv, formatted);
           chatHistory.push({ role: 'assistant', content: aiText });
           playMeow();
@@ -346,13 +367,43 @@
       meow.play();
     }
 
-    // When the play icon button is clicked, speak the AI message with a cute cat tone.
-    function playAudioMessage(button) {
+    // Toggle audio playback on the play sound button.
+    function toggleAudio(button) {
       const message = decodeURIComponent(button.getAttribute("data-message"));
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.pitch = 1.6;
-      utterance.rate = 1.2;
-      window.speechSynthesis.speak(utterance);
+      const isPlaying = button.getAttribute("data-playing") === "true";
+
+      if (isPlaying) {
+        // Stop playback.
+        window.speechSynthesis.cancel();
+        button.innerHTML = `<i class="fas fa-volume-up"></i>`;
+        button.setAttribute("data-playing", "false");
+        currentUtterance = null;
+        currentButton = null;
+      } else {
+        // If another utterance is playing, cancel it and reset its button.
+        if (currentButton && currentButton !== button) {
+          window.speechSynthesis.cancel();
+          currentButton.innerHTML = `<i class="fas fa-volume-up"></i>`;
+          currentButton.setAttribute("data-playing", "false");
+        }
+        // Create and speak the utterance.
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.pitch = 1.6;
+        utterance.rate = 1.2;
+        // When the utterance ends, revert the button.
+        utterance.onend = function() {
+          button.innerHTML = `<i class="fas fa-volume-up"></i>`;
+          button.setAttribute("data-playing", "false");
+          currentUtterance = null;
+          currentButton = null;
+        };
+        currentUtterance = utterance;
+        currentButton = button;
+        window.speechSynthesis.speak(utterance);
+        // Change the button icon to animated three dots.
+        button.innerHTML = `<span class="dots"><span>.</span><span>.</span><span>.</span></span>`;
+        button.setAttribute("data-playing", "true");
+      }
     }
   </script>
 </body>
