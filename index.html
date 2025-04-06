@@ -177,7 +177,7 @@
       gap: 0.5rem;
     }
 
-    /* Reorder elements so microphone button is on the left */
+    /* Ensure microphone button appears on the left */
     .input-container button:first-child {
       order: 1;
     }
@@ -253,8 +253,12 @@
     const GLITCH_URL = 'https://pipi-portal.glitch.me/chat';
     const chatHistory = [];
 
+    // Log keypress event on the input box for debugging
     document.getElementById('userInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
+      if (e.key === 'Enter') {
+        console.log("Enter pressed. Triggering sendMessage()");
+        sendMessage();
+      }
     });
 
     async function getApiKey() {
@@ -262,7 +266,8 @@
         const response = await fetch(GLITCH_URL);
         const data = await response.json();
         return data.apiKey || null;
-      } catch {
+      } catch (err) {
+        console.error("Error fetching API key:", err);
         return null;
       }
     }
@@ -270,6 +275,7 @@
     async function sendMessage() {
       const userInput = document.getElementById('userInput');
       const message = userInput.value.trim();
+      console.log("sendMessage() called with message:", message);
       if (!message) return;
 
       addMessage(message, 'user');
@@ -304,7 +310,8 @@
 
         if (response.ok) {
           const aiText = data.choices[0].message.content;
-          // Append a play sound button to the AI reply
+          console.log("AI response received:", aiText);
+          // Append a play sound button to the AI reply.
           const formatted = marked.parse(aiText) +
             `<button class="play-sound" onclick="playAudioMessage(this)" data-message="${encodeURIComponent(aiText)}"><i class="fas fa-volume-up"></i></button>`;
           replaceThinkingMessage(thinkingDiv, formatted);
@@ -314,6 +321,7 @@
           replaceThinkingMessage(thinkingDiv, `Oops: ${data.error?.message || 'Unknown error'}`);
         }
       } catch (error) {
+        console.error("Error in sendMessage():", error);
         replaceThinkingMessage(thinkingDiv, `Error: ${error.message}`);
       }
     }
@@ -351,7 +359,7 @@
       meow.play();
     }
 
-    // When the play icon button is clicked, speak the AI message with a cute cat tone.
+    // Speak the AI message with a cute cat tone when the play icon is clicked.
     function playAudioMessage(button) {
       const message = decodeURIComponent(button.getAttribute("data-message"));
       const utterance = new SpeechSynthesisUtterance(message);
@@ -360,8 +368,9 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // Voice Input: Start Speech Recognition with a 6-second silence threshold.
+    // Start voice input with a 6-second silence threshold.
     function startVoiceInput() {
+      console.log("startVoiceInput() triggered");
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("Sorry, your browser does not support speech recognition.");
@@ -369,7 +378,7 @@
       }
       let finalTranscript = "";
       let sent = false;
-      let recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognition();
       recognition.lang = 'zh-CN';
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -383,7 +392,31 @@
             interimTranscript += event.results[i][0].transcript;
           }
         }
+        console.log("Recognized transcript:", finalTranscript + interimTranscript);
         document.getElementById('userInput').value = finalTranscript + interimTranscript;
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
+        if (silenceTimer) clearTimeout(silenceTimer);
+        // If no new speech is detected within 6 seconds, stop and send the message.
+        silenceTimer = setTimeout(function() {
+          if (!sent) {
+            sent = true;
+            console.log("6 seconds silence reached. Stopping recognition and sending message.");
+            recognition.stop();
+            sendMessage();
+          }
+        }, 6000);
+      };
+      recognition.onerror = function(e) {
+        console.error("Speech recognition error", e);
+      };
+      recognition.onend = function() {
+        if (!sent && document.getElementById('userInput').value.trim() !== "") {
+          sent = true;
+          console.log("Speech recognition ended. Sending message.");
+          sendMessage();
         }
+      };
+      recognition.start();
+    }
+  </script>
+</body>
+</html>
